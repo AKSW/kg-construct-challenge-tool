@@ -1,0 +1,257 @@
+{
+    "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files",
+    "name": "rmltk: Virtuoso: heterogeneity files",
+    "description": "Transform into N-Triples with rmltk and Virtuoso",
+    "steps": [
+        {
+          "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step00",
+          "name": "Fix invalid RML Mapping",
+          "resource": "Rpt",
+          "command": "execute_capture",
+          "parameters": {
+            "command": "integrate",
+            "arguments": ["mapping.rml.ttl",
+			  "prefix rr: <http://www.w3.org/ns/r2rml#> DELETE {?s rr:constant ?c ; rr:termType rr:IRI} INSERT {?s rr:constant ?uri} WHERE {?s rr:constant ?c ; rr:termType rr:IRI filter(isliteral(?c)) BIND(URI(?c) AS ?uri) }",
+			  "spo.rq"],
+            "output": "mapping.rml.fixed.ttl"
+          }
+        },{
+          "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step01",
+          "name": "Transform mapping into Sparql Query",
+          "resource": "Rpt",
+          "command": "execute_capture",
+          "parameters": {
+            "command": "rmltk rml to sparql",
+            "arguments": ["mapping.rml.fixed.ttl"],
+            "output": "mapping.rml.rq"
+          }
+        },{
+          "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step02",
+          "name": "Optimise Sparql Query",
+          "resource": "Rpt",
+          "command": "execute_capture",
+          "parameters": {
+            "command": "rmltk optimize workload",
+            "arguments": ["mapping.rml.rq", "--no-order"],
+            "output": "mapping.rml.optimised.rq"
+          }
+        },{
+          "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step03",
+          "name": "Transform data into RDF",
+          "resource": "Rpt",
+          "command": "execute",
+          "parameters": {
+            "command": "sansa query",
+            "arguments": ["mapping.rml.optimised.rq", "--out-file=out.nt", "--out-overwrite"]
+          }
+        },
+
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step3",
+            "name": "Load RDF",
+            "resource": "Virtuoso",
+            "command": "load",
+            "parameters": {
+                "rdf_file": "out.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step4",
+            "name": "Execute SPARQL query 1",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q1.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results1.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step5",
+            "name": "Execute SPARQL query 2",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q2.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results2.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step6",
+            "name": "Execute SPARQL query 3",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q3.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results3.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step7",
+            "name": "Execute SPARQL query 4",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q4.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results4.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step8",
+            "name": "Execute SPARQL query 5",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q5.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results5.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step9",
+            "name": "Execute SPARQL query 6",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q6.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results6.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step10",
+            "name": "Execute SPARQL query 7",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q7.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results7.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step11",
+            "name": "Execute SPARQL query 8",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q8.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results8.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step12",
+            "name": "Execute SPARQL query 9",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q9.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results9.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step13",
+            "name": "Execute SPARQL query 10",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q10.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results10.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step14",
+            "name": "Execute SPARQL query 11",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q11.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results11.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step15",
+            "name": "Execute SPARQL query 12",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q12.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results12.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step16",
+            "name": "Execute SPARQL query 13",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q13.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results13.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step17",
+            "name": "Execute SPARQL query 14",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q14.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results14.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step18",
+            "name": "Execute SPARQL query 15",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q15.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results15.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step19",
+            "name": "Execute SPARQL query 16",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q16.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results16.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step20",
+            "name": "Execute SPARQL query 17",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q17.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results17.nt"
+            }
+        },
+        {
+            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step21",
+            "name": "Execute SPARQL query 18",
+            "resource": "Query",
+            "command": "execute_from_file_and_save",
+            "parameters": {
+                "query_file": "q18.rq",
+                "sparql_endpoint": "http://localhost:8890/sparql",
+                "results_file": "results18.nt"
+            }
+        }
+    ]
+}
