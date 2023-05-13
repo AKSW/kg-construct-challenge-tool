@@ -65,7 +65,7 @@ class Rpt(Container):
         """
         if arguments is None:
             arguments = []
-        self._logger.info(f'{self._instance}: Calling rpt {command} with {arguments!r}')
+        self._logger.debug(f'{self._instance}: Calling rpt {command} with {arguments!r}')
         try:
             result = self._execute_with_timeout([*command.split(' '), *arguments],
                                                 working_dir=working_dir)
@@ -96,7 +96,7 @@ class Rpt(Container):
         """
         if arguments is None:
             arguments = []
-        self._logger.info(f'{self._instance}: Calling rpt {command} with {arguments!r}')
+        self._logger.debug(f'{self._instance}: Calling rpt {command} with {arguments!r}')
         try:
             result = self._execute_with_timeout([*command.split(' '), *arguments],
                                                 working_dir=working_dir)
