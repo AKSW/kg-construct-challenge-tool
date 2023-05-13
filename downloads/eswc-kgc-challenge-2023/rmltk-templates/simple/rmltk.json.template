@@ -28,12 +28,22 @@
     }
   },{
     "@id": "http://example.com/cases/rmltk/${NAME}#step3",
+    "name": "Optimise Sparql Query",
+    "resource": "Rpt",
+    "command": "execute_capture",
+    "parameters": {
+      "command": "rmltk optimize workload",
+      "arguments": ["mapping.csvrml.rq", "--no-order"],
+      "output": "mapping.csvrml.optimised.rq"
+    }
+  },{
+    "@id": "http://example.com/cases/rmltk/${NAME}#step4",
     "name": "Transform data into RDF",
     "resource": "Rpt",
     "command": "execute",
     "parameters": {
       "command": "sansa query",
-      "arguments": ["mapping.csvrml.rq", "--out-file=out.nt", "--out-overwrite"]
+      "arguments": ["mapping.csvrml.optimised.rq", "--out-file=out.nt", "--out-overwrite"]
     }
   }]
 }
