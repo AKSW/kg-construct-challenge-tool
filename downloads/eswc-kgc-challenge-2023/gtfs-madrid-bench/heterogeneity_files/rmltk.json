@@ -12,6 +12,7 @@
             "command": "integrate",
             "arguments": ["mapping.rml.ttl",
 			  "prefix rr: <http://www.w3.org/ns/r2rml#> DELETE {?s rr:constant ?c ; rr:termType rr:IRI} INSERT {?s rr:constant ?uri} WHERE {?s rr:constant ?c ; rr:termType rr:IRI filter(isliteral(?c)) BIND(URI(?c) AS ?uri) }",
+			  "prefix rml: <http://semweb.mmlab.be/ns/rml#> delete { ?s rml:iterator \"[*]\" } insert { ?s rml:iterator \"$.[*]\" } where { ?s rml:iterator \"[*]\" }",
 			  "spo.rq"],
             "output": "mapping.rml.fixed.ttl"
           }
