@@ -17,6 +17,8 @@ WAIT_TIME = 1  # seconds
 TIMEOUT_TIME = 600  # seconds
 NETWORK_NAME = 'bench_executor'
 
+_NETWORKS = []
+_CONTAINERS = []
 
 class ContainerManager():
     """Manage containers and networks."""
@@ -31,7 +33,7 @@ class ContainerManager():
 
     def list_all(self):
         """List all available containers."""
-        return self._client.containers.list(all=True)
+        return list(filter(lambda _:_.id in _CONTAINERS, self._client.containers.list(all=True)))
 
     def stop_all(self):
         """Stop all containers."""
@@ -63,6 +65,7 @@ class ContainerManager():
         try:
             self._client.networks.get(name)
         except docker.errors.NotFound:
+            _NETWORKS.append(name)
             self._client.networks.create(name)
 
 
@@ -154,6 +157,8 @@ class Container():
                                                           environment=e,
                                                           volumes=v)
             self._started = (self._container is not None)
+            if detach and self._container is not None:
+                _CONTAINERS.append(self._container.id)
             return True
         except docker.errors.APIError as e:
             self._logger.error(f'Failed to start container: {e}')
