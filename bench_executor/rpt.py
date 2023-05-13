@@ -18,15 +18,20 @@ from bench_executor.logger import Logger
 class Rpt(Container):
     """RPT container for executing rmltk, sansa etc."""
 
+    _INSTANCES = 0
+
     def __init__(self, data_path: str, config_path: str, directory: str,
                  verbose: bool):
+        self._instance = Rpt._INSTANCES
+        Rpt._INSTANCES = Rpt._INSTANCES + 1
+
         self._data_path = os.path.abspath(data_path)
         self._config_path = os.path.abspath(config_path)
-        self._logger = Logger(__name__, directory, verbose)
+        self._logger = Logger(__name__ + '.' + str(self._instance), directory, verbose)
         self._verbose = verbose
 
         os.makedirs(os.path.join(self._data_path, 'rpt'), exist_ok=True)
-        super().__init__(f'aksw/rpt:{VERSION}', 'rpt',
+        super().__init__(f'aksw/rpt:{VERSION}', 'rpt' + '-' + str(self._instance),
                          self._logger,
                          volumes=[f'{self._data_path}/rpt:/data',
                                   f'{self._data_path}/shared:/data/shared'])
@@ -60,14 +65,14 @@ class Rpt(Container):
         """
         if arguments is None:
             arguments = []
-        self._logger.info(f'Calling rpt {command} with {arguments!r}')
+        self._logger.info(f'{self._instance}: Calling rpt {command} with {arguments!r}')
         try:
             result = self._execute_with_timeout([*command.split(' '), *arguments],
                                                 working_dir=working_dir)
             self.stop()
             return result
         except TimeoutError:
-            msg = f'Timeout ({TIMEOUT}s) reached for rpt'
+            msg = f'{self._instance}: Timeout ({TIMEOUT}s) reached for rpt'
             self._logger.warning(msg)
 
         return False
@@ -91,7 +96,7 @@ class Rpt(Container):
         """
         if arguments is None:
             arguments = []
-        self._logger.info(f'Calling rpt {command} with {arguments!r}')
+        self._logger.info(f'{self._instance}: Calling rpt {command} with {arguments!r}')
         try:
             result = self._execute_with_timeout([*command.split(' '), *arguments],
                                                 working_dir=working_dir)
@@ -109,7 +114,7 @@ class Rpt(Container):
             self.stop()
             return result
         except TimeoutError:
-            msg = f'Timeout ({TIMEOUT}s) reached for rpt'
+            msg = f'{self._instance}: Timeout ({TIMEOUT}s) reached for rpt'
             self._logger.warning(msg)
 
         return False
