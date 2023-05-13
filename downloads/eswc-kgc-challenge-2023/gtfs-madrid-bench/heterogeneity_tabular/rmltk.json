@@ -12,6 +12,7 @@
             "command": "integrate",
             "arguments": ["mapping.rml.ttl",
 			  "prefix rr: <http://www.w3.org/ns/r2rml#> DELETE {?s rr:constant ?c ; rr:termType rr:IRI} INSERT {?s rr:constant ?uri} WHERE {?s rr:constant ?c ; rr:termType rr:IRI filter(isliteral(?c)) BIND(URI(?c) AS ?uri) }",
+			  "PREFIX rml: <http://semweb.mmlab.be/ns/rml#> PREFIX rr:  <http://www.w3.org/ns/r2rml#> delete { ?map rr:logicalTable ?src . ?src rr:tableName ?name . } insert { ?map rml:logicalSource ?src . ?src rml:source ?nameCsv ; rml:referenceFormulation  <http://semweb.mmlab.be/ns/ql#CSV> . } where { ?map rr:logicalTable ?src . ?src rr:tableName ?name . bind(concat(ucase(?name),'.csv') as ?nameCsv) }",
 			  "spo.rq"],
             "output": "mapping.rml.fixed.ttl"
           }
