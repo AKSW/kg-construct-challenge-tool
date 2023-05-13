@@ -108,7 +108,7 @@ class Rpt(Container):
                 else:
                     output = self._data_path + '/rpt' + output.removeprefix('/data')
                 with open(output, 'wb') as outf:
-                    for line in self._container.logs(stdout=True, stream=True):
+                    for line in self._container.logs(stdout=True, stderr=False, stream=True):
                         outf.write(line)
 
             self.stop()
