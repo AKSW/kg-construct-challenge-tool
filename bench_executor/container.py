@@ -109,6 +109,7 @@ class Container():
         self._cgroups_dir = None
         self._started = False
         self._logger = logger
+        self._counter = 1
 
         # create network if not exist
         self._manager.create_network(NETWORK_NAME)
@@ -126,7 +127,7 @@ class Container():
         """The pretty name of the container"""
         return self._name
 
-    def run(self, command: str = '', detach=True) -> bool:
+    def run(self, command: str = '', *, working_dir=None, detach=True) -> bool:
         """Run the container.
 
         This is used for containers which are long running to provide services
@@ -137,6 +138,8 @@ class Container():
         command : str
             The command to execute in the container, optionally and defaults to
             no command.
+        working_dir : str
+            Set a working directory in the container (optional)
         detach : bool
             If the container may run in the background, default True.
 
@@ -148,14 +151,19 @@ class Container():
         try:
             e = self._environment
             v = self._volumes
+            kv = {}
+            if working_dir is not None:
+                kv['working_dir'] = working_dir
             self._container = self._client.containers.run(self._container_name,
                                                           command,
-                                                          name=self._name,
+                                                          name=NETWORK_NAME + '-' + self._name + '-' + str(self._counter),
                                                           detach=detach,
                                                           ports=self._ports,
                                                           network=NETWORK_NAME,
                                                           environment=e,
-                                                          volumes=v)
+                                                          volumes=v,
+                                                          **kv)
+            self._counter = self._counter + 1
             self._started = (self._container is not None)
             if detach and self._container is not None:
                 _CONTAINERS.append(self._container.id)
@@ -198,7 +206,7 @@ class Container():
 
         return False, logs
 
-    def run_and_wait_for_log(self, log_line: str, command: str = '') -> bool:
+    def run_and_wait_for_log(self, log_line: str, command: str = '', *, working_dir=None) -> bool:
         """Run the container and wait for a log line to appear.
 
         This blocks until the container's log contains the `log_line`.
@@ -210,13 +218,15 @@ class Container():
         command : str
             The command to execute in the container, optionally and defaults to
             no command.
+        working_dir : str
+            Set a working directory in the container (optional)
 
         Returns
         -------
         success : bool
             Whether the container exited with status code 0 or not.
         """
-        if not self.run(command):
+        if not self.run(command, working_dir=working_dir):
             self._logger.error(f'Command "{command}" failed')
             return False
 
@@ -254,7 +264,7 @@ class Container():
             self._logger.error(line)
         return False
 
-    def run_and_wait_for_exit(self, command: str = '') -> bool:
+    def run_and_wait_for_exit(self, command: str = '', *, working_dir=None) -> bool:
         """Run the container and wait for exit
 
         This blocks until the container exit and gives a status code.
@@ -264,13 +274,15 @@ class Container():
         command : str
             The command to execute in the container, optionally and defaults to
             no command.
+        working_dir : str
+            Set a working directory in the container (optional)
 
         Returns
         -------
        success : bool
             Whether the container exited with status code 0 or not.
         """
-        if not self.run(command):
+        if not self.run(command, working_dir=working_dir):
             return False
 
         if self._container is None:
