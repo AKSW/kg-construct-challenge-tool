@@ -8,7 +8,11 @@ bench_executor/log
 *metrics.jsonl
 *results.nt
 *stats.csv
-downloads
+
+#eswc challenge downloads
+downloads/eswc-kgc-challenge-2023/**/metadata.json
+downloads/eswc-kgc-challenge-2023.tar.gz
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -23,7 +27,6 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-downloads/
 eggs/
 .eggs/
 lib/
