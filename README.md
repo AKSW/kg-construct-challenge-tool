@@ -15,19 +15,10 @@ EXEC exposes a CLI interface `exectool`.
 
 ```
 # Ubuntu dependencies, this may differ for your Linux distro
-sudo apt install zlib1g zlib1g-dev libpq-dev libjpeg-dev python3-pip docker.io
-pip install --user -r requirements.txt
+conda create --name challenge python=3.10
+pip install -r requirements.txt
+conda activate challenge
 ```
-
-2. Configure Docker
-
-```
-# Add user to docker group
-sudo groupadd docker
-sudo usermod -aG docker $USER
-```
-
-:warning: You have to logout and login again to apply group and user permissions changes on your account.
 
 3. Download the data of the KGCW Challenge 2023 by running the tool as followed:
 ```
@@ -38,7 +29,7 @@ Make sure you have sufficient disk space left.
 
 4. Execute the example pipeline included in the challenge:
 ```
-./exectool run --runs=5 --root=downloads/eswc-kgc-challenge-2023
+./exectool run --metadata=rmltk.json --runs=5 --root=downloads/eswc-kgc-challenge-2023
 ```
 The tool will execute all cases in the
 challenge (`--root=eswc-kgc-challenge-2023`)
