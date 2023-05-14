@@ -1,45 +1,57 @@
 {
-    "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular",
-    "name": "rmltk: Virtuoso: MySQL RDB: heterogeneity tabular",
-    "description": "Transform MySQL database into N-Triples with rmltk and Virtuoso",
+    "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}",
+    "name": "${TOOLNAME}: Virtuoso: ${NAME2}",
+    "description": "Transform into N-Triples with ${TOOLNAME} and Virtuoso",
     "steps": [
         {
-          "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step00",
+          "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step00",
           "name": "Fix invalid RML Mapping",
-          "resource": "Rpt",
+          "resource": "${TOOLRESOURCE}",
           "command": "execute_capture",
           "parameters": {
             "command": "integrate",
-            "arguments": ["mapping.rml.ttl",
-			  "prefix rr: <http://www.w3.org/ns/r2rml#> DELETE {?s rr:constant ?c ; rr:termType rr:IRI} INSERT {?s rr:constant ?uri} WHERE {?s rr:constant ?c ; rr:termType rr:IRI filter(isliteral(?c)) BIND(URI(?c) AS ?uri) }",
-			  "PREFIX rml: <http://semweb.mmlab.be/ns/rml#> PREFIX rr:  <http://www.w3.org/ns/r2rml#> delete { ?map rr:logicalTable ?src . ?src rr:tableName ?name . } insert { ?map rml:logicalSource ?src . ?src rml:source ?nameCsv ; rml:referenceFormulation  <http://semweb.mmlab.be/ns/ql#CSV> . } where { ?map rr:logicalTable ?src . ?src rr:tableName ?name . bind(concat(ucase(?name),'.csv') as ?nameCsv) }",
+              "arguments": ["${MAPPINGFILE}",
+			    "# fix invalid rml mapping: https://github.com/oeg-upm/gtfs-bench/issues/142#issuecomment-1453784200 \n prefix rr: <http://www.w3.org/ns/r2rml#> DELETE {?s rr:constant ?c ; rr:termType rr:IRI} INSERT {?s rr:constant ?uri} WHERE {?s rr:constant ?c ; rr:termType rr:IRI filter(isliteral(?c)) BIND(URI(?c) AS ?uri) }",
+			    "# fix invalid JSON iterator: https://rml.io/specs/rml/#examples \n prefix rml: <http://semweb.mmlab.be/ns/rml#> delete { ?s rml:iterator \"[*]\" } insert { ?s rml:iterator \"$.[*]\" } where { ?s rml:iterator \"[*]\" }",
+			    "# add name of csv files \n PREFIX rml: <http://semweb.mmlab.be/ns/rml#> PREFIX rr:  <http://www.w3.org/ns/r2rml#> delete { ?map rr:logicalTable ?src . ?src rr:tableName ?name . } insert { ?map rml:logicalSource ?src . ?src rml:source ?nameCsv ; rml:referenceFormulation  <http://semweb.mmlab.be/ns/ql#CSV> . } where { ?map rr:logicalTable ?src . ?src rr:tableName ?name . bind(concat(ucase(?name),'.csv') as ?nameCsv) }",
+			    "PREFIX rml: <http://semweb.mmlab.be/ns/rml#> PREFIX rr:  <http://www.w3.org/ns/r2rml#> delete { ?map rr:column ?column . } insert { ?map rml:reference ?column . } where { ?map rr:column ?column }",
 			  "spo.rq"],
             "output": "mapping.rml.fixed.ttl"
           }
         },{
-          "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step01",
-          "name": "Transform mapping into Sparql Query",
-          "resource": "Rpt",
+          "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step02",
+          "name": "Run XML data mapping",
+          "resource": "${TOOLRESOURCE}",
           "command": "execute_capture",
           "parameters": {
-            "command": "rmltk rml to sparql",
+            "command": "${TOOLNAME} xmltojson",
             "arguments": ["mapping.rml.fixed.ttl"],
+            "output": "mapping.rml.noxml.ttl"
+          }
+        },{
+          "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step02",
+          "name": "Transform mapping into Sparql Query",
+          "resource": "${TOOLRESOURCE}",
+          "command": "execute_capture",
+          "parameters": {
+            "command": "${TOOLNAME} rml to sparql",
+            "arguments": ["mapping.rml.noxml.ttl"],
             "output": "mapping.rml.rq"
           }
         },{
-          "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step02",
+          "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step03",
           "name": "Optimise Sparql Query",
-          "resource": "Rpt",
+          "resource": "${TOOLRESOURCE}",
           "command": "execute_capture",
           "parameters": {
-            "command": "rmltk optimize workload",
+            "command": "${TOOLNAME} optimize workload",
             "arguments": ["mapping.rml.rq", "--no-order"],
             "output": "mapping.rml.optimised.rq"
           }
         },{
-          "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_files#step03",
+          "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step04",
           "name": "Transform data into RDF",
-          "resource": "Rpt",
+          "resource": "${TOOLRESOURCE}",
           "command": "execute",
           "parameters": {
             "command": "sansa query",
@@ -48,7 +60,7 @@
         },
 
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step3",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step3",
             "name": "Load RDF",
             "resource": "Virtuoso",
             "command": "load",
@@ -57,7 +69,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step4",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step4",
             "name": "Execute SPARQL query 1",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -68,7 +80,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step5",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step5",
             "name": "Execute SPARQL query 2",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -79,7 +91,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step6",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step6",
             "name": "Execute SPARQL query 3",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -90,7 +102,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step7",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step7",
             "name": "Execute SPARQL query 4",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -101,7 +113,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step8",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step8",
             "name": "Execute SPARQL query 5",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -112,7 +124,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step9",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step9",
             "name": "Execute SPARQL query 6",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -123,7 +135,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step10",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step10",
             "name": "Execute SPARQL query 7",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -134,7 +146,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step11",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step11",
             "name": "Execute SPARQL query 8",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -145,7 +157,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step12",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step12",
             "name": "Execute SPARQL query 9",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -156,7 +168,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step13",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step13",
             "name": "Execute SPARQL query 10",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -167,7 +179,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step14",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step14",
             "name": "Execute SPARQL query 11",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -178,7 +190,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step15",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step15",
             "name": "Execute SPARQL query 12",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -189,7 +201,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step16",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step16",
             "name": "Execute SPARQL query 13",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -200,7 +212,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step17",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step17",
             "name": "Execute SPARQL query 14",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -211,7 +223,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step18",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step18",
             "name": "Execute SPARQL query 15",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -222,7 +234,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step19",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step19",
             "name": "Execute SPARQL query 16",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -233,7 +245,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step20",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step20",
             "name": "Execute SPARQL query 17",
             "resource": "Query",
             "command": "execute_from_file_and_save",
@@ -244,7 +256,7 @@
             }
         },
         {
-            "@id": "http://example.com/cases/rmltk/Virtuoso/heterogeneity_tabular#step21",
+            "@id": "http://example.com/cases/${TOOLNAME}/Virtuoso/heterogeneity_nested#step21",
             "name": "Execute SPARQL query 18",
             "resource": "Query",
             "command": "execute_from_file_and_save",

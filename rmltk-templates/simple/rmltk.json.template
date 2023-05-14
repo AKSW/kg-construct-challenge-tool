@@ -1,11 +1,11 @@
 {
-  "@id": "http://example.com/cases/rmltk/${NAME}",
-  "name": "rmltk: ${NAME2}",
-  "description": "Transform data into N-Triples with rmltk",
+  "@id": "http://example.com/cases/${TOOLNAME}/${NAME}",
+  "name": "${TOOLNAME}: ${NAME2}",
+  "description": "Transform data into N-Triples with ${TOOLNAME}",
   "steps": [{
-    "@id": "http://example.com/cases/rmltk/${NAME}#step1",
+    "@id": "http://example.com/cases/${TOOLNAME}/${NAME}#step1",
     "name": "Generate CSV-RML mapping",
-    "resource": "Rpt",
+    "resource": "${TOOLRESOURCE}",
     "command": "execute",
     "parameters": {
       "command": "integrate",
@@ -17,29 +17,29 @@
 		    "spo.rq", "--out-file=mapping.csvrml.ttl"]
     }
   },{
-    "@id": "http://example.com/cases/rmltk/${NAME}#step2",
+    "@id": "http://example.com/cases/${TOOLNAME}/${NAME}#step2",
     "name": "Transform mapping into Sparql Query",
-    "resource": "Rpt",
+    "resource": "${TOOLRESOURCE}",
     "command": "execute_capture",
     "parameters": {
-      "command": "rmltk rml to sparql",
+      "command": "${TOOLNAME} rml to sparql",
       "arguments": ["mapping.csvrml.ttl"],
       "output": "mapping.csvrml.rq"
     }
   },{
-    "@id": "http://example.com/cases/rmltk/${NAME}#step3",
+    "@id": "http://example.com/cases/${TOOLNAME}/${NAME}#step3",
     "name": "Optimise Sparql Query",
-    "resource": "Rpt",
+    "resource": "${TOOLRESOURCE}",
     "command": "execute_capture",
     "parameters": {
-      "command": "rmltk optimize workload",
+      "command": "${TOOLNAME} optimize workload",
       "arguments": ["mapping.csvrml.rq", "--no-order"],
       "output": "mapping.csvrml.optimised.rq"
     }
   },{
-    "@id": "http://example.com/cases/rmltk/${NAME}#step4",
+    "@id": "http://example.com/cases/${TOOLNAME}/${NAME}#step4",
     "name": "Transform data into RDF",
-    "resource": "Rpt",
+    "resource": "${TOOLRESOURCE}",
     "command": "execute",
     "parameters": {
       "command": "sansa query",
