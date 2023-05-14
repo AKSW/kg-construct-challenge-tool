@@ -1,0 +1,247 @@
+'@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}
+description: Transform into N-Triples with ${TOOLNAME} and Virtuoso
+name: '${TOOLNAME}: Virtuoso: ${NAME2}'
+steps:
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step00
+  command: execute_capture
+  name: Fix invalid RML Mapping
+  parameters:
+    arguments:
+    - ${MAPPINGFILE}
+    - |
+      # fix invalid rml mapping: https://github.com/oeg-upm/gtfs-bench/issues/142#issuecomment-1453784200
+      PREFIX rr: <http://www.w3.org/ns/r2rml#>
+      DELETE {
+        ?s rr:constant ?c ; rr:termType rr:IRI
+      }
+      INSERT {
+        ?s rr:constant ?uri
+      }
+      WHERE {
+        ?s rr:constant ?c ; rr:termType rr:IRI
+        filter(isliteral(?c))
+        BIND(URI(?c) AS ?uri)
+      }
+    - |
+      # fix invalid JSON iterator: https://rml.io/specs/rml/#examples
+      PREFIX rml: <http://semweb.mmlab.be/ns/rml#>
+      DELETE { ?s rml:iterator "[*]" }
+      INSERT { ?s rml:iterator "$.[*]" }
+      WHERE  { ?s rml:iterator "[*]" }
+    - |
+      # add name of csv files
+      PREFIX rml: <http://semweb.mmlab.be/ns/rml#>
+      PREFIX rr:  <http://www.w3.org/ns/r2rml#>
+      DELETE {
+        ?map rr:logicalTable ?src .
+        ?src rr:tableName ?name .
+      }
+      INSERT {
+        ?map rml:logicalSource ?src .
+        ?src rml:source ?nameCsv ;
+             rml:referenceFormulation <http://semweb.mmlab.be/ns/ql#CSV> .
+      }
+      WHERE {
+        ?map rr:logicalTable ?src .
+        ?src rr:tableName ?name .
+        bind(concat(ucase(?name),'.csv') as ?nameCsv)
+      }
+    - |
+      PREFIX rml: <http://semweb.mmlab.be/ns/rml#>
+      PREFIX rr:  <http://www.w3.org/ns/r2rml#>
+      DELETE { ?map rr:column ?column . }
+      INSERT { ?map rml:reference ?column . }
+      WHERE { ?map rr:column ?column }
+    - spo.rq
+    command: integrate
+    output: mapping.rml.fixed.ttl
+  resource: ${TOOLRESOURCE}
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step02
+  command: execute_capture
+  name: Run XML data mapping
+  parameters:
+    arguments:
+    - mapping.rml.fixed.ttl
+    command: ${TOOLNAME} xmltojson
+    output: mapping.rml.noxml.ttl
+  resource: ${TOOLRESOURCE}
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step02
+  command: execute_capture
+  name: Transform mapping into Sparql Query
+  parameters:
+    arguments:
+    - mapping.rml.noxml.ttl
+    command: ${TOOLNAME} rml to sparql
+    output: mapping.rml.rq
+  resource: ${TOOLRESOURCE}
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step03
+  command: execute_capture
+  name: Optimise Sparql Query
+  parameters:
+    arguments:
+    - mapping.rml.rq
+    - --no-order
+    command: ${TOOLNAME} optimize workload
+    output: mapping.rml.optimised.rq
+  resource: ${TOOLRESOURCE}
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step04
+  command: execute
+  name: Transform data into RDF
+  parameters:
+    arguments:
+    - mapping.rml.optimised.rq
+    - --out-file=out.nt
+    - --out-overwrite
+    command: sansa query
+  resource: ${TOOLRESOURCE}
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step3
+  command: load
+  name: Load RDF
+  parameters:
+    rdf_file: out.nt
+  resource: Virtuoso
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step4
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 1
+  parameters:
+    query_file: q1.rq
+    results_file: results1.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step5
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 2
+  parameters:
+    query_file: q2.rq
+    results_file: results2.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step6
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 3
+  parameters:
+    query_file: q3.rq
+    results_file: results3.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step7
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 4
+  parameters:
+    query_file: q4.rq
+    results_file: results4.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step8
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 5
+  parameters:
+    query_file: q5.rq
+    results_file: results5.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step9
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 6
+  parameters:
+    query_file: q6.rq
+    results_file: results6.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step10
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 7
+  parameters:
+    query_file: q7.rq
+    results_file: results7.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step11
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 8
+  parameters:
+    query_file: q8.rq
+    results_file: results8.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step12
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 9
+  parameters:
+    query_file: q9.rq
+    results_file: results9.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step13
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 10
+  parameters:
+    query_file: q10.rq
+    results_file: results10.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step14
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 11
+  parameters:
+    query_file: q11.rq
+    results_file: results11.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step15
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 12
+  parameters:
+    query_file: q12.rq
+    results_file: results12.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step16
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 13
+  parameters:
+    query_file: q13.rq
+    results_file: results13.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step17
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 14
+  parameters:
+    query_file: q14.rq
+    results_file: results14.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step18
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 15
+  parameters:
+    query_file: q15.rq
+    results_file: results15.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step19
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 16
+  parameters:
+    query_file: q16.rq
+    results_file: results16.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step20
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 17
+  parameters:
+    query_file: q17.rq
+    results_file: results17.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+- '@id': http://example.com/cases/${TOOLNAME}/Virtuoso/${NAME}#step21
+  command: execute_from_file_and_save
+  name: Execute SPARQL query 18
+  parameters:
+    query_file: q18.rq
+    results_file: results18.nt
+    sparql_endpoint: http://localhost:8890/sparql
+  resource: Query
+

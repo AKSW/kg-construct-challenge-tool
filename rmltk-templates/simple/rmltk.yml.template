@@ -1,0 +1,67 @@
+'@id': http://example.com/cases/${TOOLNAME}/${NAME}
+description: Transform data into N-Triples with ${TOOLNAME}
+name: '${TOOLNAME}: ${NAME2}'
+steps:
+- '@id': http://example.com/cases/${TOOLNAME}/${NAME}#step1
+  command: execute
+  name: Generate CSV-RML mapping
+  parameters:
+    arguments:
+    - mapping.r2rml.ttl
+    - |
+      PREFIX rml: <http://semweb.mmlab.be/ns/rml#>
+      PREFIX rr:  <http://www.w3.org/ns/r2rml#>
+      DELETE {
+        ?map rr:logicalTable ?src .
+        ?src rr:tableName ?name .
+      }
+      INSERT {
+        ?map rml:logicalSource ?src .
+        ?src rml:source ?nameCsv ;
+             rml:referenceFormulation  <http://semweb.mmlab.be/ns/ql#CSV> .
+      }
+      WHERE {
+        ?map rr:logicalTable ?src .
+        ?src rr:tableName ?name .
+        bind(concat(?name,'.csv') as ?nameCsv)
+      }
+    - |
+      PREFIX rml: <http://semweb.mmlab.be/ns/rml#>
+      PREFIX rr:  <http://www.w3.org/ns/r2rml#>
+      DELETE { ?map rr:column ?column . }
+      INSERT { ?map rml:reference ?column . }
+      WHERE { ?map rr:column ?column }
+    - spo.rq
+    - --out-file=mapping.csvrml.ttl
+    command: integrate
+  resource: ${TOOLRESOURCE}
+- '@id': http://example.com/cases/${TOOLNAME}/${NAME}#step2
+  command: execute_capture
+  name: Transform mapping into Sparql Query
+  parameters:
+    arguments:
+    - mapping.csvrml.ttl
+    command: ${TOOLNAME} rml to sparql
+    output: mapping.csvrml.rq
+  resource: ${TOOLRESOURCE}
+- '@id': http://example.com/cases/${TOOLNAME}/${NAME}#step3
+  command: execute_capture
+  name: Optimise Sparql Query
+  parameters:
+    arguments:
+    - mapping.csvrml.rq
+    - --no-order
+    command: ${TOOLNAME} optimize workload
+    output: mapping.csvrml.optimised.rq
+  resource: ${TOOLRESOURCE}
+- '@id': http://example.com/cases/${TOOLNAME}/${NAME}#step4
+  command: execute
+  name: Transform data into RDF
+  parameters:
+    arguments:
+    - mapping.csvrml.optimised.rq
+    - --out-file=out.nt
+    - --out-overwrite
+    command: sansa query
+  resource: ${TOOLRESOURCE}
+
